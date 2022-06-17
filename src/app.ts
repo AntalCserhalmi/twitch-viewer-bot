@@ -27,6 +27,7 @@ const login = async (): Promise<string> => {
 
 
 const checkRoshIsLive = async (): Promise<boolean> => {
+    console.log("[\x1b[36mACTION\x1b[0m]: Checking stream status...");
     const access_token = await login();
 
     const response = await axios.get(Config.rosh.url, {
@@ -39,7 +40,9 @@ const checkRoshIsLive = async (): Promise<boolean> => {
             "Content-Type": "application/json;charset=UTF-8"
         }
     });
-
+    if (response.data.data.length === 0)
+        return false;
+    
     return response.data.data[0].type === "live";
 };
 
