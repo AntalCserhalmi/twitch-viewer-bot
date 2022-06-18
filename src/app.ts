@@ -62,7 +62,7 @@ const initAndConnectAccounts = (): void => {
                 channels: accounts[i].channels
             });
 
-            client.connect();
+            client.connect().catch(error => console.log(`${error} - ${accounts[i].username}`));
 
             client.on("connected", (a: string, b: number) => {
                 console.log(`${accounts[i].username}: ready`, a, b);
