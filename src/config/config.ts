@@ -49,6 +49,26 @@ export const accounts: Array<IAccount> = [
         channels: ["roshtein", "deuceace", "vondice", "trainwreckstv", "frankdimes", "classybeef"]
     },
     {
+        username: "batmanbeginspinecone",
+        token: "bdfsqux706n8g8rhxs0gzi79yndjsk",
+        channels: ["roshtein", "deuceace", "vondice", "trainwreckstv", "frankdimes", "classybeef"]
+    },
+    {
+        username: "gymnasticsranleoiran",
+        token: "rwh1fpuk0ipbsv4lid4xkx4wrxsxbk",
+        channels: ["roshtein", "deuceace", "vondice", "trainwreckstv", "frankdimes", "classybeef"]
+    },
+    {
+        username: "thegodfathercrackers",
+        token: "xyzk0hyghimy1v4norxbwhki20ddg9",
+        channels: ["roshtein", "deuceace", "vondice", "trainwreckstv", "frankdimes", "classybeef"]
+    },
+    {
+        username: "cityofgodlightning",
+        token: "llvteekqfsm9guf5vadowsil5239v5",
+        channels: ["roshtein", "deuceace", "vondice", "trainwreckstv", "frankdimes", "classybeef"]
+    },
+    {
         username: "hyposwasp",
         token: "g7bdu51319a8hakd46mdinbuiit6q2",
         channels: ["roshtein", "deuceace", "vondice", "trainwreckstv", "frankdimes", "classybeef"]
