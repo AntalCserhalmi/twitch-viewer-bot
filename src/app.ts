@@ -1,10 +1,12 @@
-import { Config, accounts } from "./config/config";
+import { Config, accounts, Streamer, streamers as configStreamers} from "./config/config";
 import axios from "axios";
 import tmi from "tmi.js";
 import { Logger } from "./logger/Logger";
 
 const logger = new Logger();
 const clients: Array<tmi.Client> = [];
+const streamers: Array<Streamer> = configStreamers.slice(0);
+
 let expire = 0;
 let currentToken = "";
 
@@ -27,14 +29,14 @@ const login = async (): Promise<string> => {
     return currentToken;
 };
 
-
-const checkRoshIsLive = async (): Promise<boolean> => {
-    logger.info("Checking stream status...");
+const checkStreamerIsLive = async(channel: {userId: number;}): Promise<boolean> => {
+    logger.info(`Checking ${channel.userId} Stream Status...`);
+    
     const access_token = await login();
 
-    const response = await axios.get(Config.rosh.url, {
+    const response = await axios.get(Config.tracker.url, {
         params: {
-            user_id: Config.rosh.userId
+            user_id: channel.userId
         },
         headers: {
             "Authorization": `Bearer ${access_token}`,
@@ -42,16 +44,13 @@ const checkRoshIsLive = async (): Promise<boolean> => {
             "Content-Type": "application/json;charset=UTF-8"
         }
     });
-    if (response.data.data.length === 0)
-        return false;
-    
-    return response.data.data[0].type === "live";
+
+    return response.data.data.length === 0? false: true;
 };
 
-const initAndConnectAccounts = (): void => {
-    logger.info("Rosh started streaming...");
-    logger.info("Connecting accounts...");
-    for (let i =0; i < accounts.length; i++){
+const initAccounts = (): void => {
+    logger.info("Initializing Accounts...");
+    for (let i=0; i < accounts.length; i++){
         try{
             const client = new tmi.Client({
                 options: {
@@ -59,53 +58,46 @@ const initAndConnectAccounts = (): void => {
                 },
                 identity: {
                     username: accounts[i].username,
-                    password: `oauth:${accounts[i].token}`,
+                    password: `oauth:${accounts[i].token}`
                 },
-                channels: accounts[i].channels
+                channels: []
             });
 
-            client.connect().catch(error => logger.error(`${error} - ${accounts[i].username}`));
-
-            client.on("connected", (a: string, b: number) => {
-                logger.info(`${accounts[i].username}: ready`, a, b);
-
+            client.connect().catch(err => logger.error(`${err} - ${accounts[i].username}`));
+            client.on("connected", (host: string, port: number) => {
+                logger.info(`${accounts[i].username}: ready`, host, port);
                 clients.push(client);
-            })
+            });
         }catch(err){
             logger.error(err);
         }
     }
 };
 
-const destroyAccounts = (): void => {
-    logger.info("Rosh went offline.");
-    logger.info("Start disconnecting accounts...");
-    for (let i=0; i < clients.length; i++){
-        clients[i].disconnect();
-
-        clients.splice(i, 1);
-    }
-
-    logger.info("Accounts have been disconnected");
-};
-
-const startLoop = (): void => {
-    logger.info("Starting loop...");
+const mainLoop = () => {
+    logger.info("Start Loop...");
+    initAccounts();
     setInterval(async () => {
-        const live = await checkRoshIsLive();
+        for(let i=0; i < streamers.length; i++){
+            const isLive = await checkStreamerIsLive({userId: streamers[i].userId});
 
-        if (live){
-            if (clients.length === 0){
-                initAndConnectAccounts();
+            if (isLive && !streamers[i].live){
+                for (let j=0; j < clients.length; j++){
+                    clients[j].join(streamers[i].username);
+                    logger.info(`Connected to ${streamers[i].username}`);
+                }
             }
-        }else{
-            if (clients.length !== 0){
-                destroyAccounts();
+
+            if (!isLive && streamers[i].live){
+                for (let j=0; j < clients.length; j++){
+                    clients[j].part(streamers[i].username);
+                    logger.info(`Disconnected from ${streamers[i].username}`);
+                }
             }
+
+            streamers[i].live = isLive;
         }
     }, Config.loop.time);
-};
+}
 
-
-startLoop();
-
+mainLoop();

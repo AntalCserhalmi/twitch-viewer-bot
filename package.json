@@ -4,11 +4,11 @@
         "start": "node ./dist/app.js"
     },
     "devDependencies": {
+        "@types/node": "^18.0.0",
         "@types/tmi.js": "^1.8.1",
         "typescript": "^4.7.3"
     },
     "dependencies": {
-        "@types/node": "^18.0.0",
         "axios": "^0.27.2",
         "tmi.js": "^1.8.5"
     }
